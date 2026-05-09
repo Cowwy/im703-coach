@@ -119,7 +119,7 @@ A repo-d **Settings → Secrets and variables → Actions** menüjében.
 
 | Név | Érték (példa) |
 |---|---|
-| `ATHLETE_NAME` | `Abonyi János` |
+| `ATHLETE_NAME` | `Kovács Gergő` |
 | `RACE_DATE` | `2026-09-13` |
 | `PREV_RACE_RESULTS_JSON` | `{"swim_1.9km":"43:58","bike_90km":"2:40:10","run_21.1km":"1:42:59","total":"5:18:00"}` |
 
@@ -149,7 +149,7 @@ pip install -r requirements.txt
 
 # 2. Env változók (minimum)
 export ANTHROPIC_API_KEY="sk-ant-..."
-export ATHLETE_NAME="Abonyi János"
+export ATHLETE_NAME="Kovács Gergő"
 export RACE_DATE="2026-09-13"
 export INTERVALS_ATHLETE_ID="iXXXXX"
 export INTERVALS_API_KEY="..."
