@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+.env.local
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Output - generált fájlok ne menjenek a repóba (de a könyvtár igen)
+output/*.html
+output/*.json
+output/history/
+!output/.gitkeep
+
+# Logger / debug dump
+python_code_dump.txt

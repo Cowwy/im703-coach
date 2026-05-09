@@ -1,0 +1,75 @@
+name: Generate IM 70.3 Training Plan
+
+# Heti rendszerességgel + manuálisan is indítható
+on:
+  schedule:
+    # Minden hétfő reggel 5:00 UTC = 7:00 közép-európai idő (nyári: 6:00 UTC)
+    # Így amikor reggel felkelsz, már friss terved van a hétre.
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: "Friss megjegyzések (fájdalom, utazás, betegség, érzések...)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write   # commitolja az új tervet a repo-ba
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate plan
+        env:
+          # Claude
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Sportolói adatok (repo Settings → Variables ill. Secrets)
+          ATHLETE_NAME: ${{ vars.ATHLETE_NAME }}
+          RACE_DATE: ${{ vars.RACE_DATE }}
+          PREV_RACE_RESULTS_JSON: ${{ vars.PREV_RACE_RESULTS_JSON }}
+          # Manuális indításnál a megjegyzések
+          ATHLETE_NOTES: ${{ github.event.inputs.notes }}
+          # Intervals.icu (elsődleges)
+          INTERVALS_ATHLETE_ID: ${{ secrets.INTERVALS_ATHLETE_ID }}
+          INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
+          # Strava (fallback)
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+        run: python scripts/generate_plan.py
+
+      - name: Commit & push new plan
+        run: |
+          git config user.name "im703-coach-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add output/
+          if git diff --staged --quiet; then
+            echo "Nincs változás, nem commitolok."
+          else
+            git commit -m "🏃 Új edzésterv: $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Upload as artifact (backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-plan-${{ github.run_id }}
+          path: output/
+          retention-days: 90
